@@ -1,0 +1,30 @@
+{
+  "name": "NestSchemaGen",
+  "version": "1.0.0",
+  "description": "TypeScript-based code generator that transforms classes and interfaces into fully decorated NestJS artifacts. Automatically generates Swagger DTOs and Mongoose schemas, reducing boilerplate and ensuring consistency across your API and database layers. Ideal for speeding up development in scalable NestJS projects.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "nest-schema-gen": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node src/cli.ts",
+    "dev": "ts-node src/cli.ts"
+  },
+  "keywords": ["nestjs", "swagger", "mongoose", "dto", "typescript", "codegen"],
+  "license": "MIT",
+  "dependencies": {
+    "ts-morph": "^28.0.0"
+  },
+  "peerDependencies": {
+    "@nestjs/swagger": ">=7",
+    "class-validator": ">=0.14",
+    "class-transformer": ">=0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}
