@@ -9,6 +9,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "test": "jest",
     "start": "ts-node src/cli.ts",
     "dev": "ts-node src/cli.ts"
   },
@@ -26,13 +27,16 @@
   },
   "peerDependencies": {
     "@nestjs/mongoose": "^11.0.4",
-    "mongoose": "^9.4.1",
     "@nestjs/swagger": ">=7",
     "class-transformer": ">=0.5",
-    "class-validator": ">=0.14"
+    "class-validator": ">=0.14",
+    "mongoose": "^9.4.1"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "@types/jest": "^30.0.0",
+    "jest": "^30.3.0",
+    "ts-jest": "^29.4.9",
     "ts-node": "^10.9.0",
     "typescript": "^5.0.0"
   }
