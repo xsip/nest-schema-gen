@@ -2,16 +2,20 @@
 import * as fs from "fs";
 import * as path from "path";
 import { TypeResolver } from "./resolver";
-import { DtoGenerator, GeneratorOptions } from "./generator";
+import { NestSwaggerGenerator, NestSwaggerGeneratorOptions } from "./nest-swagger-generator";
+import { NestMongooseGenerator, NestMongooseGeneratorOptions } from "./nest-mongoose-generator";
+import { GeneratedFile } from "./base-generator";
 
 // ──────────────────────────────────────────────────────────────────────────────
 // CLI argument parsing
 // ──────────────────────────────────────────────────────────────────────────────
 
+type GeneratorKind = "swagger" | "mongoose";
+
 function printUsage(): void {
     console.log(`
-NestJS Swagger DTO Generator
-─────────────────────────────
+NestJS Schema Generator
+────────────────────────
 Usage:
   ts-node src/cli.ts <file> <InterfaceName> [options]
 
@@ -19,17 +23,27 @@ Arguments:
   file            Path to the TypeScript source file
   InterfaceName   Name of the interface or type alias to convert
 
-Options:
-  --out <dir>           Output directory (default: ./generated)
+Generator:
+  --generator <kind>    Which generator to use: swagger (default) | mongoose
+
+Swagger options (--generator swagger):
   --suffix <suffix>     DTO class suffix (default: Dto)
   --no-validator        Disable class-validator decorators
   --no-transformer      Disable class-transformer @Type decorators
+
+Mongoose options (--generator mongoose):
+  --suffix <suffix>     Schema class suffix (default: Schema)
+  --no-timestamps       Disable { timestamps: true } on @Schema()
+  --emit-interface      Emit a companion lean document interface
+
+Shared options:
+  --out <dir>           Output directory (default: ./generated)
   --barrel              Emit a barrel index.ts
   --dry-run             Print output to stdout instead of writing files
 
 Examples:
   ts-node src/cli.ts src/types/user.ts IUser
-  ts-node src/cli.ts src/types/user.ts IUser --out src/dto --suffix Dto
+  ts-node src/cli.ts src/types/user.ts IUser --generator mongoose --out src/schemas
   ts-node src/cli.ts src/types/user.ts IUser --dry-run
 `);
 }
@@ -38,7 +52,9 @@ interface CliArgs {
     file: string;
     interfaceName: string;
     out: string;
-    opts: GeneratorOptions;
+    kind: GeneratorKind;
+    swaggerOpts: NestSwaggerGeneratorOptions;
+    mongooseOpts: NestMongooseGeneratorOptions;
     dryRun: boolean;
 }
 
@@ -55,24 +71,41 @@ function parseArgs(argv: string[]): CliArgs {
 
     let out = "./generated";
     let dryRun = false;
-    const opts: GeneratorOptions = {};
+    let kind: GeneratorKind = "swagger";
+    const swaggerOpts: NestSwaggerGeneratorOptions = {};
+    const mongooseOpts: NestMongooseGeneratorOptions = {};
 
     for (let i = 2; i < args.length; i++) {
         switch (args[i]) {
+            case "--generator":
+                kind = args[++i] as GeneratorKind;
+                if (kind !== "swagger" && kind !== "mongoose") {
+                    console.error(`Unknown generator: ${kind}. Must be 'swagger' or 'mongoose'.`);
+                    process.exit(1);
+                }
+                break;
             case "--out":
                 out = args[++i];
                 break;
             case "--suffix":
-                opts.dtoSuffix = args[++i];
+                swaggerOpts.classSuffix = args[++i];
+                mongooseOpts.classSuffix = swaggerOpts.classSuffix;
                 break;
             case "--no-validator":
-                opts.classValidator = false;
+                swaggerOpts.classValidator = false;
                 break;
             case "--no-transformer":
-                opts.classTransformer = false;
+                swaggerOpts.classTransformer = false;
+                break;
+            case "--no-timestamps":
+                mongooseOpts.timestamps = false;
+                break;
+            case "--emit-interface":
+                mongooseOpts.emitInterface = true;
                 break;
             case "--barrel":
-                opts.emitBarrel = true;
+                swaggerOpts.emitBarrel = true;
+                mongooseOpts.emitBarrel = true;
                 break;
             case "--dry-run":
                 dryRun = true;
@@ -82,7 +115,7 @@ function parseArgs(argv: string[]): CliArgs {
         }
     }
 
-    return { file, interfaceName, out, opts, dryRun };
+    return { file, interfaceName, out, kind, swaggerOpts, mongooseOpts, dryRun };
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -90,15 +123,16 @@ function parseArgs(argv: string[]): CliArgs {
 // ──────────────────────────────────────────────────────────────────────────────
 
 async function main(): Promise<void> {
-    const { file, interfaceName, out, opts, dryRun } = parseArgs(process.argv);
+    const { file, interfaceName, out, kind, swaggerOpts, mongooseOpts, dryRun } = parseArgs(process.argv);
 
-    // Validate input file
     if (!fs.existsSync(file)) {
         console.error(`Error: File not found: ${file}`);
         process.exit(1);
     }
 
-    console.log(`\n📦 Resolving "${interfaceName}" from ${file}...\n`);
+    const kindLabel = kind === "mongoose" ? "Mongoose Schemas" : "Swagger DTOs";
+    console.log(`\n📦 Resolving "${interfaceName}" from ${file}...`);
+    console.log(`   Generator: ${kindLabel}\n`);
 
     const resolver = new TypeResolver(file);
     let result;
@@ -124,25 +158,26 @@ async function main(): Promise<void> {
         console.log(`   Total resolved: ${stats.interfaces} interface(s), ${stats.enums} enum(s)\n`);
     } else {
         console.log(`✅ Resolved ${stats.interfaces} interface(s), ${stats.enums} enum(s)`);
-        console.log(
-            `   Declarations: ${emitted.map((d) => d.name).join(", ")}\n`
-        );
+        console.log(`   Declarations: ${emitted.map((d) => d.name).join(", ")}\n`);
     }
 
-    const generator = new DtoGenerator(opts);
-    const files = generator.generate(result);
+    let files: GeneratedFile[];
+    if (kind === "mongoose") {
+        files = new NestMongooseGenerator(mongooseOpts).generate(result);
+    } else {
+        files = new NestSwaggerGenerator(swaggerOpts).generate(result);
+    }
 
     if (dryRun) {
-        for (const file of files) {
+        for (const f of files) {
             console.log(`${"─".repeat(60)}`);
-            console.log(`// ${file.filename}`);
+            console.log(`// ${f.filename}`);
             console.log(`${"─".repeat(60)}`);
-            console.log(file.content);
+            console.log(f.content);
         }
         return;
     }
 
-    // Write files
     const outDir = path.resolve(out);
     fs.mkdirSync(outDir, { recursive: true });
 

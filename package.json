@@ -12,15 +12,24 @@
     "start": "ts-node src/cli.ts",
     "dev": "ts-node src/cli.ts"
   },
-  "keywords": ["nestjs", "swagger", "mongoose", "dto", "typescript", "codegen"],
+  "keywords": [
+    "nestjs",
+    "swagger",
+    "mongoose",
+    "dto",
+    "typescript",
+    "codegen"
+  ],
   "license": "MIT",
   "dependencies": {
     "ts-morph": "^28.0.0"
   },
   "peerDependencies": {
+    "@nestjs/mongoose": "^11.0.4",
+    "mongoose": "^9.4.1",
     "@nestjs/swagger": ">=7",
-    "class-validator": ">=0.14",
-    "class-transformer": ">=0.5"
+    "class-transformer": ">=0.5",
+    "class-validator": ">=0.14"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
