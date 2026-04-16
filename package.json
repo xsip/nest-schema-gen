@@ -11,7 +11,9 @@
     "build": "tsc",
     "test": "jest",
     "start": "ts-node src/cli.ts",
-    "dev": "ts-node src/cli.ts"
+    "dev": "ts-node src/cli.ts",
+    "example:swagger": "node dist\\cli.js example\\in\\user.ts IUser --generator swagger  --out example/swagger-out",
+    "example:mongoose": "node dist\\cli.js example\\in\\user.ts IUser --generator mongoose  --out example/mongoose-out"
   },
   "keywords": [
     "nestjs",

@@ -32,7 +32,7 @@ interface PropDescriptor {
 export class NestMongooseGenerator extends BaseGenerator<NestMongooseGeneratorOptions> {
     constructor(opts: NestMongooseGeneratorOptions = {}) {
         super(opts, {
-            classSuffix:    opts.classSuffix    ?? "Schema",
+            classSuffix:    opts.classSuffix    ?? "",
             emitBarrel:     opts.emitBarrel     ?? false,
             timestamps:     opts.timestamps     ?? true,
             emitInterface:  opts.emitInterface  ?? false,

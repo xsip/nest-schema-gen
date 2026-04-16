@@ -4,7 +4,7 @@ import { mongoose } from 'mongoose';
 import { Roles } from './Roles';
 
 @Schema({ timestamps: true })
-export class UserSchema {
+export class User {
   @Prop({
     required: true,
     type: String,
@@ -36,13 +36,4 @@ export class UserSchema {
   inlineRoles!: ('test1' | 'test2' | 'test3')[];
 }
 
-export const UserSchemaSchema = SchemaFactory.createForClass(UserSchema);
-
-/** Lean document interface for UserSchema */
-export interface IUser {
-  username: string;
-  email: string;
-  password: string;
-  roles?: Roles[];
-  inlineRoles: ('test1' | 'test2' | 'test3')[];
-}
+export const UserSchema = SchemaFactory.createForClass(User);

@@ -32,7 +32,7 @@ Swagger options (--generator swagger):
   --no-transformer      Disable class-transformer @Type decorators
 
 Mongoose options (--generator mongoose):
-  --suffix <suffix>     Schema class suffix (default: Schema)
+  --suffix <suffix>     Schema class suffix (default: EMPTY)
   --no-timestamps       Disable { timestamps: true } on @Schema()
   --emit-interface      Emit a companion lean document interface
 
