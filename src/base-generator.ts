@@ -162,10 +162,15 @@ export abstract class BaseGenerator<TOptions extends BaseGeneratorOptions> {
 
 export class ImportBuilder {
     private map = new Map<string, Set<string>>();
+    private defaultMap = new Map<string, string>();
 
     add(module: string, name: string): void {
         if (!this.map.has(module)) this.map.set(module, new Set());
         this.map.get(module)!.add(name);
+    }
+
+    addDefault(module: string, name: string): void {
+        this.defaultMap.set(module, name);
     }
 
     reserve(module: string): void {
@@ -187,9 +192,28 @@ export class ImportBuilder {
             (mod.startsWith(".") ? local : external).push([mod, sorted]);
         }
 
-        for (const [mod, names] of external) lines.push(`import { ${names.join(", ")} } from '${mod}';`);
-        if (external.length > 0 && local.length > 0) lines.push("");
-        for (const [mod, names] of local) lines.push(`import { ${names.join(", ")} } from '${mod}';`);
+        const renderLine = (mod: string, namedNames: string[]): string => {
+            const defaultName = this.defaultMap.get(mod);
+            if (defaultName && namedNames.length > 0) {
+                return `import ${defaultName}, { ${namedNames.join(", ")} } from '${mod}';`;
+            } else if (defaultName) {
+                return `import ${defaultName} from '${mod}';`;
+            } else {
+                return `import { ${namedNames.join(", ")} } from '${mod}';`;
+            }
+        };
+
+        const externalLines = external.map(([mod, names]) => renderLine(mod, names));
+        for (const mod of this.defaultMap.keys()) {
+            if (!mod.startsWith(".") && !external.find(([m]) => m === mod)) {
+                externalLines.push(renderLine(mod, []));
+            }
+        }
+        const localLines = local.map(([mod, names]) => renderLine(mod, names));
+
+        lines.push(...externalLines);
+        if (externalLines.length > 0 && localLines.length > 0) lines.push("");
+        lines.push(...localLines);
 
         return lines.join("\n");
     }

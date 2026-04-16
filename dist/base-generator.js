@@ -126,11 +126,15 @@ exports.BaseGenerator = BaseGenerator;
 class ImportBuilder {
     constructor() {
         this.map = new Map();
+        this.defaultMap = new Map();
     }
     add(module, name) {
         if (!this.map.has(module))
             this.map.set(module, new Set());
         this.map.get(module).add(name);
+    }
+    addDefault(module, name) {
+        this.defaultMap.set(module, name);
     }
     reserve(module) {
         if (!this.map.has(module))
@@ -149,12 +153,29 @@ class ImportBuilder {
                 continue;
             (mod.startsWith(".") ? local : external).push([mod, sorted]);
         }
-        for (const [mod, names] of external)
-            lines.push(`import { ${names.join(", ")} } from '${mod}';`);
-        if (external.length > 0 && local.length > 0)
+        const renderLine = (mod, namedNames) => {
+            const defaultName = this.defaultMap.get(mod);
+            if (defaultName && namedNames.length > 0) {
+                return `import ${defaultName}, { ${namedNames.join(", ")} } from '${mod}';`;
+            }
+            else if (defaultName) {
+                return `import ${defaultName} from '${mod}';`;
+            }
+            else {
+                return `import { ${namedNames.join(", ")} } from '${mod}';`;
+            }
+        };
+        const externalLines = external.map(([mod, names]) => renderLine(mod, names));
+        for (const mod of this.defaultMap.keys()) {
+            if (!mod.startsWith(".") && !external.find(([m]) => m === mod)) {
+                externalLines.push(renderLine(mod, []));
+            }
+        }
+        const localLines = local.map(([mod, names]) => renderLine(mod, names));
+        lines.push(...externalLines);
+        if (externalLines.length > 0 && localLines.length > 0)
             lines.push("");
-        for (const [mod, names] of local)
-            lines.push(`import { ${names.join(", ")} } from '${mod}';`);
+        lines.push(...localLines);
         return lines.join("\n");
     }
 }

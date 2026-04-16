@@ -41,7 +41,9 @@ export declare abstract class BaseGenerator<TOptions extends BaseGeneratorOption
 }
 export declare class ImportBuilder {
     private map;
+    private defaultMap;
     add(module: string, name: string): void;
+    addDefault(module: string, name: string): void;
     reserve(module: string): void;
     addLocal(module: string, name: string): void;
     render(): string;

@@ -252,7 +252,7 @@ export class NestMongooseGenerator extends BaseGenerator<NestMongooseGeneratorOp
     private renderProp(desc: PropDescriptor, imports: ImportBuilder): string {
         // Ensure mongoose import when Mixed is used
         if (desc.type?.includes("mongoose.Schema.Types.Mixed")) {
-            imports.add("mongoose", "mongoose");
+            imports.addDefault("mongoose", "mongoose");
         }
 
         const entries: string[] = [];
