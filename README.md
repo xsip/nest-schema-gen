@@ -28,10 +28,7 @@
 ### Global (CLI use)
 
 ```bash
-# from npm
-npm install -g nest-schema-gen
-
-# directly from GitHub
+# directly from GitHub ( no npm release yet )
 npm install -g github:xsip/NestSchemaGen
 ```
 
