@@ -29,7 +29,7 @@
 
 ```bash
 # directly from GitHub ( no npm release yet )
-npm install -g github:xsip/NestSchemaGen
+npm install -g github:xsip/nest-schema-gen
 ```
 
 ### Local (programmatic use)
