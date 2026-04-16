@@ -3,4 +3,3 @@ node_modules
 .env
 test-projects
 test-projects-transformed
-dist

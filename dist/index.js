@@ -1,0 +1,213 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DtoGenerator = exports.ZodGenerator = exports.NestMongooseGenerator = exports.NestSwaggerGenerator = exports.ImportBuilder = exports.BaseGenerator = exports.TypeResolver = void 0;
+exports.generateDtos = generateDtos;
+exports.generateSchemas = generateSchemas;
+exports.generateZodSchemas = generateZodSchemas;
+exports.generateDtosFromFolder = generateDtosFromFolder;
+exports.generateSchemasFromFolder = generateSchemasFromFolder;
+exports.generateZodSchemasFromFolder = generateZodSchemasFromFolder;
+var resolver_1 = require("./resolver");
+Object.defineProperty(exports, "TypeResolver", { enumerable: true, get: function () { return resolver_1.TypeResolver; } });
+var base_generator_1 = require("./base-generator");
+Object.defineProperty(exports, "BaseGenerator", { enumerable: true, get: function () { return base_generator_1.BaseGenerator; } });
+Object.defineProperty(exports, "ImportBuilder", { enumerable: true, get: function () { return base_generator_1.ImportBuilder; } });
+var nest_swagger_generator_1 = require("./nest-swagger-generator");
+Object.defineProperty(exports, "NestSwaggerGenerator", { enumerable: true, get: function () { return nest_swagger_generator_1.NestSwaggerGenerator; } });
+var nest_mongoose_generator_1 = require("./nest-mongoose-generator");
+Object.defineProperty(exports, "NestMongooseGenerator", { enumerable: true, get: function () { return nest_mongoose_generator_1.NestMongooseGenerator; } });
+var zod_generator_1 = require("./zod-generator");
+Object.defineProperty(exports, "ZodGenerator", { enumerable: true, get: function () { return zod_generator_1.ZodGenerator; } });
+// Legacy re-exports for backwards compatibility
+var nest_swagger_generator_2 = require("./nest-swagger-generator");
+Object.defineProperty(exports, "DtoGenerator", { enumerable: true, get: function () { return nest_swagger_generator_2.DtoGenerator; } });
+const path = __importStar(require("path"));
+const resolver_2 = require("./resolver");
+const nest_swagger_generator_3 = require("./nest-swagger-generator");
+const nest_mongoose_generator_2 = require("./nest-mongoose-generator");
+const zod_generator_2 = require("./zod-generator");
+/**
+ * One-shot API: resolve an interface and generate Swagger DTOs.
+ *
+ * @example
+ * ```ts
+ * import { generateDtos } from 'nest-schema-gen';
+ * const files = generateDtos('./src/types/user.ts', 'IUser');
+ * for (const f of files) fs.writeFileSync(f.filename, f.content);
+ * ```
+ */
+function generateDtos(filePath, interfaceName, opts = {}) {
+    const resolver = new resolver_2.TypeResolver(path.resolve(filePath));
+    const result = resolver.resolve(interfaceName);
+    return new nest_swagger_generator_3.NestSwaggerGenerator(opts).generate(result);
+}
+/**
+ * One-shot API: resolve an interface and generate Mongoose schemas.
+ *
+ * @example
+ * ```ts
+ * import { generateSchemas } from 'nest-schema-gen';
+ * const files = generateSchemas('./src/types/user.ts', 'IUser');
+ * for (const f of files) fs.writeFileSync(f.filename, f.content);
+ * ```
+ */
+function generateSchemas(filePath, interfaceName, opts = {}) {
+    const resolver = new resolver_2.TypeResolver(path.resolve(filePath));
+    const result = resolver.resolve(interfaceName);
+    return new nest_mongoose_generator_2.NestMongooseGenerator(opts).generate(result);
+}
+/**
+ * One-shot API: resolve an interface and generate Zod schemas.
+ *
+ * @example
+ * ```ts
+ * import { generateZodSchemas } from 'nest-schema-gen';
+ * const files = generateZodSchemas('./src/types/user.ts', 'IUser');
+ * for (const f of files) fs.writeFileSync(f.filename, f.content);
+ * ```
+ */
+function generateZodSchemas(filePath, interfaceName, opts = {}) {
+    const resolver = new resolver_2.TypeResolver(path.resolve(filePath));
+    const result = resolver.resolve(interfaceName);
+    return new zod_generator_2.ZodGenerator(opts).generate(result);
+}
+// ──────────────────────────────────────────────────────────────────────────────
+// Folder API
+// ──────────────────────────────────────────────────────────────────────────────
+const fs = __importStar(require("fs"));
+/**
+ * Walk `folderPath` recursively, resolve every exported interface/type alias
+ * in every `.ts` file, and run the given generator on each.
+ *
+ * Returns a flat list of `FolderGenerationResult` entries — one per
+ * (source-file × interface) combination.
+ *
+ * @example
+ * ```ts
+ * import { generateDtosFromFolder } from 'nest-schema-gen';
+ * const results = generateDtosFromFolder('./src/types');
+ * for (const r of results) {
+ *   for (const f of r.files) fs.writeFileSync(f.filename, f.content);
+ * }
+ * ```
+ */
+function generateDtosFromFolder(folderPath, opts = {}, folderOpts = {}) {
+    return _generateFromFolder(folderPath, folderOpts, (resolver, result) => new nest_swagger_generator_3.NestSwaggerGenerator(opts).generate(result));
+}
+/**
+ * Walk `folderPath` recursively and generate Mongoose schemas for every
+ * exported interface/type alias found.
+ *
+ * @example
+ * ```ts
+ * import { generateSchemasFromFolder } from 'nest-schema-gen';
+ * const results = generateSchemasFromFolder('./src/types');
+ * ```
+ */
+function generateSchemasFromFolder(folderPath, opts = {}, folderOpts = {}) {
+    return _generateFromFolder(folderPath, folderOpts, (resolver, result) => new nest_mongoose_generator_2.NestMongooseGenerator(opts).generate(result));
+}
+/**
+ * Walk `folderPath` recursively and generate Zod schemas for every
+ * exported interface/type alias found.
+ *
+ * @example
+ * ```ts
+ * import { generateZodSchemasFromFolder } from 'nest-schema-gen';
+ * const results = generateZodSchemasFromFolder('./src/types');
+ * ```
+ */
+function generateZodSchemasFromFolder(folderPath, opts = {}, folderOpts = {}) {
+    return _generateFromFolder(folderPath, folderOpts, (resolver, result) => new zod_generator_2.ZodGenerator(opts).generate(result));
+}
+// ── Internal helpers ──────────────────────────────────────────────────────────
+function _collectTsFiles(dir, ignore) {
+    const results = [];
+    function walk(current) {
+        let entries;
+        try {
+            entries = fs.readdirSync(current, { withFileTypes: true });
+        }
+        catch {
+            return;
+        }
+        for (const entry of entries) {
+            const fullPath = path.join(current, entry.name);
+            const rel = path.relative(dir, fullPath);
+            if (ignore.some((p) => rel.includes(p)))
+                continue;
+            if (entry.isDirectory()) {
+                walk(fullPath);
+            }
+            else if (entry.isFile() &&
+                entry.name.endsWith(".ts") &&
+                !entry.name.endsWith(".d.ts")) {
+                results.push(fullPath);
+            }
+        }
+    }
+    walk(dir);
+    return results;
+}
+function _generateFromFolder(folderPath, folderOpts, generate) {
+    const abs = path.resolve(folderPath);
+    const ignore = folderOpts.ignore ?? [];
+    const tsFiles = _collectTsFiles(abs, ignore);
+    const out = [];
+    for (const tsFile of tsFiles) {
+        const resolver = new resolver_2.TypeResolver(tsFile);
+        let allResults;
+        try {
+            allResults = resolver.resolveAll();
+        }
+        catch {
+            continue;
+        }
+        for (const result of allResults) {
+            const roots = result.roots ?? [result.root];
+            for (const root of roots) {
+                try {
+                    const files = generate(resolver, result);
+                    out.push({ sourceFile: tsFile, interfaceName: root.name, files });
+                }
+                catch {
+                    // skip individual failures
+                }
+            }
+        }
+    }
+    return out;
+}

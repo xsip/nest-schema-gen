@@ -10,7 +10,8 @@
         "rootDir": "./src",
         "declaration": true,
         "experimentalDecorators": true,
-        "emitDecoratorMetadata": true
+        "emitDecoratorMetadata": true,
+        "types": ["node"]
     },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "dist", "**/*.spec.ts"]
