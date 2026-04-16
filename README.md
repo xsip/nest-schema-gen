@@ -6,6 +6,10 @@
 
 ---
 
+![Header](https://raw.githubusercontent.com/xsip/nest-schema-gen/refs/heads/main/preview.png)
+
+---
+
 ## Features
 
 - **Swagger DTO generation** — `@ApiProperty`, `@IsString`, `@IsOptional`, `@IsArray`, `@Type`, etc.
