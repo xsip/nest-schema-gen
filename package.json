@@ -30,12 +30,12 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/YOUR_USERNAME/nest-schema-gen.git"
+        "url": "git+https://github.com/xsip/nest-schema-gent"
     },
     "bugs": {
-        "url": "https://github.com/YOUR_USERNAME/nest-schema-gen/issues"
+        "url": "https://github.com/xsip/nest-schema-gen/issues"
     },
-    "homepage": "https://github.com/YOUR_USERNAME/nest-schema-gen#readme",
+    "homepage": "https://github.com/xsip/nest-schema-gen#readme",
     "keywords": [
         "nestjs",
         "swagger",
@@ -46,6 +46,7 @@
         "schema",
         "generator",
         "nest",
+        "zod",
         "openapi"
     ],
     "author": "",
