@@ -201,36 +201,6 @@ for (const file of schemaFiles) {
 | `NestMongooseGenerator`   | Mongoose generator class (for fine-grained control)     |
 | `BaseGenerator`           | Abstract base — extend to build custom generators       |
 
----
-
-## Peer Dependencies
-
-All peer dependencies are **optional** — only install what you actually use.
-
-| Package              | Required for         |
-| -------------------- | -------------------- |
-| `@nestjs/swagger`    | Swagger DTO output   |
-| `class-validator`    | Swagger DTO output   |
-| `class-transformer`  | Swagger DTO output   |
-| `@nestjs/mongoose`   | Mongoose schema output |
-| `mongoose`           | Mongoose schema output |
-
----
-
-## Publishing to npm
-
-```bash
-# Build first
-npm run build
-
-# Publish
-npm publish
-
-# Or publish under a scope
-npm publish --access public
-```
-
-> The `prepublishOnly` script runs `tsc` automatically before publishing.
 
 ---
 
