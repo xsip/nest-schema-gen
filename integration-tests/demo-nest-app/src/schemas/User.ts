@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose from 'mongoose';
 
+import { UserDetails } from './UserDetails';
 import { Roles } from './Roles';
 
 @Schema({ timestamps: true })
@@ -10,6 +11,12 @@ export class User {
     type: String,
   })
   username!: string;
+
+  @Prop({
+    required: true,
+    type: UserDetails,
+  })
+  details!: UserDetails;
 
   @Prop({
     required: true,

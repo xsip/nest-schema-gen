@@ -1,12 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
+import { UserDetailsDto } from './UserDetailsDto';
 import { Roles } from './Roles';
 
 export class UserDto {
   @ApiProperty({ type: 'string' })
   @IsString()
   username!: string;
+
+  @ApiProperty({ type: () => UserDetailsDto })
+  @ValidateNested()
+  @Type(() => UserDetailsDto)
+  details!: UserDetailsDto;
 
   @ApiProperty({ type: 'string' })
   @IsString()

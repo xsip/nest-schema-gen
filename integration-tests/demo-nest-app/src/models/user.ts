@@ -3,8 +3,15 @@ export enum Roles {
   ADMIN = 'admin',
 }
 
+export interface UserDetails {
+  firstname: string;
+  lastname: string;
+  address?: string;
+}
+
 export interface IUser {
   username: string;
+  details: UserDetails;
   email: string;
   password: string;
   roles?: Array<Roles>;
