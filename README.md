@@ -27,7 +27,7 @@
 npm install -g nest-schema-gen
 
 # directly from GitHub
-npm install -g github:YOUR_USERNAME/nest-schema-gen
+npm install -g github:xsip/NestSchemaGen
 ```
 
 ### Local (programmatic use)
