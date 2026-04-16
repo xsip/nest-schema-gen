@@ -88,76 +88,241 @@ nest-schema-gen src/types/user.ts IUser --barrel --out src/dto
 
 ```typescript
 export enum Roles {
-  USER = "user",
-  ADMIN = "admin",
+  /** Standard user with basic access permissions */
+  USER = 'user',
+
+  /** Administrator with elevated privileges */
+  ADMIN = 'admin',
+}
+
+export interface UserDetails {
+  /** User's first name */
+  firstname: string;
+
+  /** User's last name */
+  lastname: string;
+
+  /** Optional physical address of the user */
+  address?: string;
 }
 
 export interface IUser {
+  /** Unique username used for login or identification */
   username: string;
+
+  /** Nested object containing personal details of the user */
+  details: UserDetails;
+
+  /** User's email address for contact and authentication */
   email: string;
+
+  /** User's password (should be stored securely, e.g., hashed) */
   password: string;
+
+  /** Optional list of roles assigned to the user (e.g., USER, ADMIN) */
   roles?: Array<Roles>;
-  inlineRoles: ("test1" | "test2" | "test3")[];
+
+  /** Array of inline role identifiers with limited predefined values */
+  inlineRoles: ('test1' | 'test2' | 'test3')[];
 }
+
 ```
 
 **Swagger DTO output** (`--generator swagger`):
 
 ```typescript
-import { ApiProperty } from "@nestjs/swagger";
-import { IsArray, IsOptional, IsString } from "class-validator";
-import { Roles } from "./Roles";
+// UserDto.ts
+import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
+
+import { UserDetailsDto } from './UserDetailsDto';
+import { Roles } from './Roles';
 
 export class UserDto {
-  @ApiProperty({ type: "string" })
+  /** Unique username used for login or identification */
+  @ApiProperty({
+    description: `Unique username used for login or identification`,
+    type: 'string',
+  })
   @IsString()
   username!: string;
 
-  @ApiProperty({ type: "string" })
+  /** Nested object containing personal details of the user */
+  @ApiProperty({
+    description: `Nested object containing personal details of the user`,
+    type: () => UserDetailsDto,
+  })
+  @ValidateNested()
+  @Type(() => UserDetailsDto)
+  details!: UserDetailsDto;
+
+  /** User's email address for contact and authentication */
+  @ApiProperty({
+    description: `User's email address for contact and authentication`,
+    type: 'string',
+  })
   @IsString()
   email!: string;
 
-  @ApiProperty({ type: "string" })
+  /** User's password (should be stored securely, e.g., hashed) */
+  @ApiProperty({
+    description: `User's password (should be stored securely, e.g., hashed)`,
+    type: 'string',
+  })
   @IsString()
   password!: string;
 
-  @ApiProperty({ required: false, isArray: true, enum: Roles })
+  /** Optional list of roles assigned to the user (e.g., USER, ADMIN) */
+  @ApiProperty({
+    required: false,
+    description: `Optional list of roles assigned to the user (e.g., USER, ADMIN)`,
+    isArray: true,
+    enum: Roles,
+  })
   @IsOptional()
   @IsArray()
   roles?: Roles[];
 
-  @ApiProperty({ isArray: true, enum: ["test1", "test2", "test3"] })
+  /** Array of inline role identifiers with limited predefined values */
+  @ApiProperty({
+    description: `Array of inline role identifiers with limited predefined values`,
+    isArray: true,
+    enum: ['test1', 'test2', 'test3'],
+  })
   @IsArray()
-  inlineRoles!: ("test1" | "test2" | "test3")[];
+  inlineRoles!: ('test1' | 'test2' | 'test3')[];
 }
+
+// UserDetailsDto.ts
+import { ApiProperty } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
+
+export class UserDetailsDto {
+  /** User's first name */
+  @ApiProperty({
+    description: `User's first name`,
+    type: 'string',
+  })
+  @IsString()
+  firstname!: string;
+
+  /** User's last name */
+  @ApiProperty({
+    description: `User's last name`,
+    type: 'string',
+  })
+  @IsString()
+  lastname!: string;
+
+  /** Optional physical address of the user */
+  @ApiProperty({
+    required: false,
+    description: `Optional physical address of the user`,
+    type: 'string',
+  })
+  @IsOptional()
+  @IsString()
+  address?: string;
+}
+
+// Roles.ts
+export enum Roles {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
+
 ```
 
 **Mongoose schema output** (`--generator mongoose`):
 
 ```typescript
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { mongoose } from "mongoose";
-import { Roles } from "./Roles";
+// User.ts
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
+
+import { UserDetails } from './UserDetails';
+import { Roles } from './Roles';
 
 @Schema({ timestamps: true })
 export class User {
-  @Prop({ required: true, type: String })
+  /** Unique username used for login or identification */
+  @Prop({
+    required: true,
+    type: String,
+  })
   username!: string;
 
-  @Prop({ required: true, type: String })
+  /** Nested object containing personal details of the user */
+  @Prop({
+    required: true,
+    type: UserDetails,
+  })
+  details!: UserDetails;
+
+  /** User's email address for contact and authentication */
+  @Prop({
+    required: true,
+    type: String,
+  })
   email!: string;
 
-  @Prop({ required: true, type: String })
+  /** User's password (should be stored securely, e.g., hashed) */
+  @Prop({
+    required: true,
+    type: String,
+  })
   password!: string;
 
-  @Prop({ type: String, enum: Roles })
+  /** Optional list of roles assigned to the user (e.g., USER, ADMIN) */
+  @Prop({
+    type: String,
+    enum: Roles,
+  })
   roles?: Roles[];
 
-  @Prop({ required: true, type: mongoose.Schema.Types.Mixed })
-  inlineRoles!: ("test1" | "test2" | "test3")[];
+  /** Array of inline role identifiers with limited predefined values */
+  @Prop({
+    required: true,
+    type: mongoose.Schema.Types.Mixed,
+  })
+  inlineRoles!: ('test1' | 'test2' | 'test3')[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// UserDetails.ts
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+
+@Schema({ timestamps: true })
+export class UserDetails {
+  /** User's first name */
+  @Prop({
+    required: true,
+    type: String,
+  })
+  firstname!: string;
+
+  /** User's last name */
+  @Prop({
+    required: true,
+    type: String,
+  })
+  lastname!: string;
+
+  /** Optional physical address of the user */
+  @Prop({ type: String })
+  address?: string;
+}
+
+export const UserDetailsSchema = SchemaFactory.createForClass(UserDetails);
+// Roles.ts
+export enum Roles {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
 ```
 
 ---
