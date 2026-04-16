@@ -56,30 +56,6 @@
     "dependencies": {
         "ts-morph": "^28.0.0"
     },
-    "peerDependencies": {
-        "@nestjs/mongoose": "^11.0.4",
-        "@nestjs/swagger": ">=7",
-        "class-transformer": ">=0.5",
-        "class-validator": ">=0.14",
-        "mongoose": "^9.4.1"
-    },
-    "peerDependenciesMeta": {
-        "@nestjs/mongoose": {
-            "optional": true
-        },
-        "@nestjs/swagger": {
-            "optional": true
-        },
-        "class-transformer": {
-            "optional": true
-        },
-        "class-validator": {
-            "optional": true
-        },
-        "mongoose": {
-            "optional": true
-        }
-    },
     "devDependencies": {
         "@types/node": "^22.0.0",
         "@types/jest": "^30.0.0",
