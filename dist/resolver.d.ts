@@ -73,6 +73,12 @@ export declare class TypeResolver {
     constructor(rootFilePath: string);
     resolve(interfaceName: string): ResolutionResult;
     /**
+     * Resolve all exported interfaces and type aliases in the root file.
+     * Returns one ResolutionResult per top-level exported name, skipping
+     * names that fail to resolve (e.g. non-interface aliases like `type Id = string`).
+     */
+    resolveAll(): ResolutionResult[];
+    /**
      * If `decl` is a type alias of the form `type X = A | B | C` where every
      * union member is a plain type reference (no primitives, no literals), return
      * the list of reference names.  Otherwise return null.

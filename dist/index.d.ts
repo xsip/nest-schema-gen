@@ -41,3 +41,54 @@ export declare function generateSchemas(filePath: string, interfaceName: string,
  * ```
  */
 export declare function generateZodSchemas(filePath: string, interfaceName: string, opts?: ZodGeneratorOptions): GeneratedFile[];
+export interface FolderGenerationResult {
+    /** Source file path (absolute) */
+    sourceFile: string;
+    /** Interface or type alias name that was resolved */
+    interfaceName: string;
+    /** Generated files for this interface */
+    files: GeneratedFile[];
+}
+export interface GenerateFromFolderOptions {
+    /** Sub-strings to exclude when walking the folder (e.g. ["node_modules", "dist", "spec.ts"]) */
+    ignore?: string[];
+}
+/**
+ * Walk `folderPath` recursively, resolve every exported interface/type alias
+ * in every `.ts` file, and run the given generator on each.
+ *
+ * Returns a flat list of `FolderGenerationResult` entries — one per
+ * (source-file × interface) combination.
+ *
+ * @example
+ * ```ts
+ * import { generateDtosFromFolder } from 'nest-schema-gen';
+ * const results = generateDtosFromFolder('./src/types');
+ * for (const r of results) {
+ *   for (const f of r.files) fs.writeFileSync(f.filename, f.content);
+ * }
+ * ```
+ */
+export declare function generateDtosFromFolder(folderPath: string, opts?: NestSwaggerGeneratorOptions, folderOpts?: GenerateFromFolderOptions): FolderGenerationResult[];
+/**
+ * Walk `folderPath` recursively and generate Mongoose schemas for every
+ * exported interface/type alias found.
+ *
+ * @example
+ * ```ts
+ * import { generateSchemasFromFolder } from 'nest-schema-gen';
+ * const results = generateSchemasFromFolder('./src/types');
+ * ```
+ */
+export declare function generateSchemasFromFolder(folderPath: string, opts?: NestMongooseGeneratorOptions, folderOpts?: GenerateFromFolderOptions): FolderGenerationResult[];
+/**
+ * Walk `folderPath` recursively and generate Zod schemas for every
+ * exported interface/type alias found.
+ *
+ * @example
+ * ```ts
+ * import { generateZodSchemasFromFolder } from 'nest-schema-gen';
+ * const results = generateZodSchemasFromFolder('./src/types');
+ * ```
+ */
+export declare function generateZodSchemasFromFolder(folderPath: string, opts?: ZodGeneratorOptions, folderOpts?: GenerateFromFolderOptions): FolderGenerationResult[];

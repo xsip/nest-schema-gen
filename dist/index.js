@@ -37,6 +37,9 @@ exports.DtoGenerator = exports.ZodGenerator = exports.NestMongooseGenerator = ex
 exports.generateDtos = generateDtos;
 exports.generateSchemas = generateSchemas;
 exports.generateZodSchemas = generateZodSchemas;
+exports.generateDtosFromFolder = generateDtosFromFolder;
+exports.generateSchemasFromFolder = generateSchemasFromFolder;
+exports.generateZodSchemasFromFolder = generateZodSchemasFromFolder;
 var resolver_1 = require("./resolver");
 Object.defineProperty(exports, "TypeResolver", { enumerable: true, get: function () { return resolver_1.TypeResolver; } });
 var base_generator_1 = require("./base-generator");
@@ -100,4 +103,111 @@ function generateZodSchemas(filePath, interfaceName, opts = {}) {
     const resolver = new resolver_2.TypeResolver(path.resolve(filePath));
     const result = resolver.resolve(interfaceName);
     return new zod_generator_2.ZodGenerator(opts).generate(result);
+}
+// ──────────────────────────────────────────────────────────────────────────────
+// Folder API
+// ──────────────────────────────────────────────────────────────────────────────
+const fs = __importStar(require("fs"));
+/**
+ * Walk `folderPath` recursively, resolve every exported interface/type alias
+ * in every `.ts` file, and run the given generator on each.
+ *
+ * Returns a flat list of `FolderGenerationResult` entries — one per
+ * (source-file × interface) combination.
+ *
+ * @example
+ * ```ts
+ * import { generateDtosFromFolder } from 'nest-schema-gen';
+ * const results = generateDtosFromFolder('./src/types');
+ * for (const r of results) {
+ *   for (const f of r.files) fs.writeFileSync(f.filename, f.content);
+ * }
+ * ```
+ */
+function generateDtosFromFolder(folderPath, opts = {}, folderOpts = {}) {
+    return _generateFromFolder(folderPath, folderOpts, (resolver, result) => new nest_swagger_generator_3.NestSwaggerGenerator(opts).generate(result));
+}
+/**
+ * Walk `folderPath` recursively and generate Mongoose schemas for every
+ * exported interface/type alias found.
+ *
+ * @example
+ * ```ts
+ * import { generateSchemasFromFolder } from 'nest-schema-gen';
+ * const results = generateSchemasFromFolder('./src/types');
+ * ```
+ */
+function generateSchemasFromFolder(folderPath, opts = {}, folderOpts = {}) {
+    return _generateFromFolder(folderPath, folderOpts, (resolver, result) => new nest_mongoose_generator_2.NestMongooseGenerator(opts).generate(result));
+}
+/**
+ * Walk `folderPath` recursively and generate Zod schemas for every
+ * exported interface/type alias found.
+ *
+ * @example
+ * ```ts
+ * import { generateZodSchemasFromFolder } from 'nest-schema-gen';
+ * const results = generateZodSchemasFromFolder('./src/types');
+ * ```
+ */
+function generateZodSchemasFromFolder(folderPath, opts = {}, folderOpts = {}) {
+    return _generateFromFolder(folderPath, folderOpts, (resolver, result) => new zod_generator_2.ZodGenerator(opts).generate(result));
+}
+// ── Internal helpers ──────────────────────────────────────────────────────────
+function _collectTsFiles(dir, ignore) {
+    const results = [];
+    function walk(current) {
+        let entries;
+        try {
+            entries = fs.readdirSync(current, { withFileTypes: true });
+        }
+        catch {
+            return;
+        }
+        for (const entry of entries) {
+            const fullPath = path.join(current, entry.name);
+            const rel = path.relative(dir, fullPath);
+            if (ignore.some((p) => rel.includes(p)))
+                continue;
+            if (entry.isDirectory()) {
+                walk(fullPath);
+            }
+            else if (entry.isFile() &&
+                entry.name.endsWith(".ts") &&
+                !entry.name.endsWith(".d.ts")) {
+                results.push(fullPath);
+            }
+        }
+    }
+    walk(dir);
+    return results;
+}
+function _generateFromFolder(folderPath, folderOpts, generate) {
+    const abs = path.resolve(folderPath);
+    const ignore = folderOpts.ignore ?? [];
+    const tsFiles = _collectTsFiles(abs, ignore);
+    const out = [];
+    for (const tsFile of tsFiles) {
+        const resolver = new resolver_2.TypeResolver(tsFile);
+        let allResults;
+        try {
+            allResults = resolver.resolveAll();
+        }
+        catch {
+            continue;
+        }
+        for (const result of allResults) {
+            const roots = result.roots ?? [result.root];
+            for (const root of roots) {
+                try {
+                    const files = generate(resolver, result);
+                    out.push({ sourceFile: tsFile, interfaceName: root.name, files });
+                }
+                catch {
+                    // skip individual failures
+                }
+            }
+        }
+    }
+    return out;
 }

@@ -153,6 +153,38 @@ export class TypeResolver {
     }
 
     /**
+     * Resolve all exported interfaces and type aliases in the root file.
+     * Returns one ResolutionResult per top-level exported name, skipping
+     * names that fail to resolve (e.g. non-interface aliases like `type Id = string`).
+     */
+    resolveAll(): ResolutionResult[] {
+        const rootFile = this.project.getSourceFileOrThrow(this.rootFilePath);
+
+        const names: string[] = [
+            ...rootFile.getInterfaces()
+                .filter((i) => i.isExported())
+                .map((i) => i.getName()),
+            ...rootFile.getTypeAliases()
+                .filter((a) => a.isExported())
+                .map((a) => a.getName()),
+        ];
+
+        const results: ResolutionResult[] = [];
+
+        for (const name of names) {
+            // Fresh resolver state per name so declarations don't bleed across.
+            const sub = new TypeResolver(this.rootFilePath);
+            try {
+                results.push(sub.resolve(name));
+            } catch {
+                // Skip aliases that don't resolve to an interface (e.g. primitive aliases)
+            }
+        }
+
+        return results;
+    }
+
+    /**
      * If `decl` is a type alias of the form `type X = A | B | C` where every
      * union member is a plain type reference (no primitives, no literals), return
      * the list of reference names.  Otherwise return null.
