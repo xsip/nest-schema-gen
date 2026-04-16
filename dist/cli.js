@@ -39,6 +39,7 @@ const path = __importStar(require("path"));
 const resolver_1 = require("./resolver");
 const nest_swagger_generator_1 = require("./nest-swagger-generator");
 const nest_mongoose_generator_1 = require("./nest-mongoose-generator");
+const zod_generator_1 = require("./zod-generator");
 function printUsage() {
     console.log(`
 NestJS Schema Generator
@@ -51,7 +52,7 @@ Arguments:
   InterfaceName   Name of the interface or type alias to convert
 
 Generator:
-  --generator <kind>    Which generator to use: swagger (default) | mongoose
+  --generator <kind>    Which generator to use: swagger (default) | mongoose | zod
 
 Swagger options (--generator swagger):
   --suffix <suffix>     DTO class suffix (default: Dto)
@@ -62,6 +63,12 @@ Mongoose options (--generator mongoose):
   --suffix <suffix>     Schema class suffix (default: EMPTY)
   --no-timestamps       Disable { timestamps: true } on @Schema()
   --emit-interface      Emit a companion lean document interface
+
+Zod options (--generator zod):
+  --suffix <suffix>     Base name suffix (default: EMPTY)
+  --schema-suffix       Zod const name suffix (default: Schema)
+  --no-type             Skip emitting inferred TypeScript types
+  --strict              Add .strict() to object schemas
 
 Shared options:
   --out <dir>           Output directory (default: ./generated)
@@ -87,12 +94,13 @@ function parseArgs(argv) {
     let kind = "swagger";
     const swaggerOpts = {};
     const mongooseOpts = {};
+    const zodOpts = {};
     for (let i = 2; i < args.length; i++) {
         switch (args[i]) {
             case "--generator":
                 kind = args[++i];
-                if (kind !== "swagger" && kind !== "mongoose") {
-                    console.error(`Unknown generator: ${kind}. Must be 'swagger' or 'mongoose'.`);
+                if (kind !== "swagger" && kind !== "mongoose" && kind !== "zod") {
+                    console.error(`Unknown generator: ${kind}. Must be 'swagger', 'mongoose', or 'zod'.`);
                     process.exit(1);
                 }
                 break;
@@ -102,6 +110,16 @@ function parseArgs(argv) {
             case "--suffix":
                 swaggerOpts.classSuffix = args[++i];
                 mongooseOpts.classSuffix = swaggerOpts.classSuffix;
+                zodOpts.classSuffix = swaggerOpts.classSuffix;
+                break;
+            case "--schema-suffix":
+                zodOpts.schemaSuffix = args[++i];
+                break;
+            case "--no-type":
+                zodOpts.emitType = false;
+                break;
+            case "--strict":
+                zodOpts.strict = true;
                 break;
             case "--no-validator":
                 swaggerOpts.classValidator = false;
@@ -118,6 +136,7 @@ function parseArgs(argv) {
             case "--barrel":
                 swaggerOpts.emitBarrel = true;
                 mongooseOpts.emitBarrel = true;
+                zodOpts.emitBarrel = true;
                 break;
             case "--dry-run":
                 dryRun = true;
@@ -126,18 +145,18 @@ function parseArgs(argv) {
                 console.warn(`Unknown option: ${args[i]}`);
         }
     }
-    return { file, interfaceName, out, kind, swaggerOpts, mongooseOpts, dryRun };
+    return { file, interfaceName, out, kind, swaggerOpts, mongooseOpts, zodOpts, dryRun };
 }
 // ──────────────────────────────────────────────────────────────────────────────
 // Main
 // ──────────────────────────────────────────────────────────────────────────────
 async function main() {
-    const { file, interfaceName, out, kind, swaggerOpts, mongooseOpts, dryRun } = parseArgs(process.argv);
+    const { file, interfaceName, out, kind, swaggerOpts, mongooseOpts, zodOpts, dryRun } = parseArgs(process.argv);
     if (!fs.existsSync(file)) {
         console.error(`Error: File not found: ${file}`);
         process.exit(1);
     }
-    const kindLabel = kind === "mongoose" ? "Mongoose Schemas" : "Swagger DTOs";
+    const kindLabel = kind === "mongoose" ? "Mongoose Schemas" : kind === "zod" ? "Zod Schemas" : "Swagger DTOs";
     console.log(`\n📦 Resolving "${interfaceName}" from ${file}...`);
     console.log(`   Generator: ${kindLabel}\n`);
     const resolver = new resolver_1.TypeResolver(file);
@@ -168,6 +187,9 @@ async function main() {
     let files;
     if (kind === "mongoose") {
         files = new nest_mongoose_generator_1.NestMongooseGenerator(mongooseOpts).generate(result);
+    }
+    else if (kind === "zod") {
+        files = new zod_generator_1.ZodGenerator(zodOpts).generate(result);
     }
     else {
         files = new nest_swagger_generator_1.NestSwaggerGenerator(swaggerOpts).generate(result);

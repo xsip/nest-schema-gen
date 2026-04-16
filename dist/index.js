@@ -33,9 +33,10 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.DtoGenerator = exports.NestMongooseGenerator = exports.NestSwaggerGenerator = exports.ImportBuilder = exports.BaseGenerator = exports.TypeResolver = void 0;
+exports.DtoGenerator = exports.ZodGenerator = exports.NestMongooseGenerator = exports.NestSwaggerGenerator = exports.ImportBuilder = exports.BaseGenerator = exports.TypeResolver = void 0;
 exports.generateDtos = generateDtos;
 exports.generateSchemas = generateSchemas;
+exports.generateZodSchemas = generateZodSchemas;
 var resolver_1 = require("./resolver");
 Object.defineProperty(exports, "TypeResolver", { enumerable: true, get: function () { return resolver_1.TypeResolver; } });
 var base_generator_1 = require("./base-generator");
@@ -45,6 +46,8 @@ var nest_swagger_generator_1 = require("./nest-swagger-generator");
 Object.defineProperty(exports, "NestSwaggerGenerator", { enumerable: true, get: function () { return nest_swagger_generator_1.NestSwaggerGenerator; } });
 var nest_mongoose_generator_1 = require("./nest-mongoose-generator");
 Object.defineProperty(exports, "NestMongooseGenerator", { enumerable: true, get: function () { return nest_mongoose_generator_1.NestMongooseGenerator; } });
+var zod_generator_1 = require("./zod-generator");
+Object.defineProperty(exports, "ZodGenerator", { enumerable: true, get: function () { return zod_generator_1.ZodGenerator; } });
 // Legacy re-exports for backwards compatibility
 var nest_swagger_generator_2 = require("./nest-swagger-generator");
 Object.defineProperty(exports, "DtoGenerator", { enumerable: true, get: function () { return nest_swagger_generator_2.DtoGenerator; } });
@@ -52,6 +55,7 @@ const path = __importStar(require("path"));
 const resolver_2 = require("./resolver");
 const nest_swagger_generator_3 = require("./nest-swagger-generator");
 const nest_mongoose_generator_2 = require("./nest-mongoose-generator");
+const zod_generator_2 = require("./zod-generator");
 /**
  * One-shot API: resolve an interface and generate Swagger DTOs.
  *
@@ -81,4 +85,19 @@ function generateSchemas(filePath, interfaceName, opts = {}) {
     const resolver = new resolver_2.TypeResolver(path.resolve(filePath));
     const result = resolver.resolve(interfaceName);
     return new nest_mongoose_generator_2.NestMongooseGenerator(opts).generate(result);
+}
+/**
+ * One-shot API: resolve an interface and generate Zod schemas.
+ *
+ * @example
+ * ```ts
+ * import { generateZodSchemas } from 'nest-schema-gen';
+ * const files = generateZodSchemas('./src/types/user.ts', 'IUser');
+ * for (const f of files) fs.writeFileSync(f.filename, f.content);
+ * ```
+ */
+function generateZodSchemas(filePath, interfaceName, opts = {}) {
+    const resolver = new resolver_2.TypeResolver(path.resolve(filePath));
+    const result = resolver.resolve(interfaceName);
+    return new zod_generator_2.ZodGenerator(opts).generate(result);
 }

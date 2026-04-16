@@ -1,83 +1,94 @@
 {
-  "name": "nest-schema-gen",
-  "version": "1.0.0",
-  "description": "TypeScript-based code generator that transforms classes and interfaces into fully decorated NestJS artifacts. Automatically generates Swagger DTOs and Mongoose schemas, reducing boilerplate and ensuring consistency across your API and database layers.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist/**/*",
-    "README.md",
-    "LICENSE"
-  ],
-  "bin": {
-    "nest-schema-gen": "./dist/cli.js"
-  },
-  "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
-    "prepublishOnly": "npm run build",
-    "test": "jest",
-    "start": "ts-node src/cli.ts",
-    "dev": "ts-node src/cli.ts",
-    "example:swagger": "node dist/cli.js integration-tests/demo-nest-app/src/models/user.ts IUser --generator swagger --out integration-tests/demo-nest-app/src/dtos",
-    "example:mongoose": "node dist/cli.js integration-tests/demo-nest-app/src/models/user.ts IUser --generator mongoose --out integration-tests/demo-nest-app/src/schemas",
-    "generate:demo:models": "npm run example:swagger && npm run example:mongoose",
-    "lint": "eslint \"src/**/*.ts\"",
-    "lint:fix": "eslint \"src/**/*.ts\" --fix",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "format:check": "prettier --check \"src/**/*.ts\""
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/YOUR_USERNAME/nest-schema-gen.git"
-  },
-  "bugs": {
-    "url": "https://github.com/YOUR_USERNAME/nest-schema-gen/issues"
-  },
-  "homepage": "https://github.com/YOUR_USERNAME/nest-schema-gen#readme",
-  "keywords": [
-    "nestjs",
-    "swagger",
-    "mongoose",
-    "dto",
-    "typescript",
-    "codegen",
-    "schema",
-    "generator",
-    "nest",
-    "openapi"
-  ],
-  "author": "",
-  "license": "MIT",
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "dependencies": {
-    "ts-morph": "^28.0.0"
-  },
-  "peerDependencies": {
-    "@nestjs/mongoose": "^11.0.4",
-    "@nestjs/swagger": ">=7",
-    "class-transformer": ">=0.5",
-    "class-validator": ">=0.14",
-    "mongoose": "^9.4.1"
-  },
-  "peerDependenciesMeta": {
-    "@nestjs/mongoose": { "optional": true },
-    "@nestjs/swagger": { "optional": true },
-    "class-transformer": { "optional": true },
-    "class-validator": { "optional": true },
-    "mongoose": { "optional": true }
-  },
-  "devDependencies": {
-    "@types/node": "^22.0.0",
-    "@types/jest": "^30.0.0",
-    "typescript-eslint": "^8.0.0",
-    "eslint": "^9.0.0",
-    "jest": "^30.3.0",
-    "prettier": "^3.0.0",
-    "ts-jest": "^29.4.9",
-    "ts-node": "^10.9.0",
-    "typescript": "^5.0.0"
-  }
+    "name": "nest-schema-gen",
+    "version": "1.0.0",
+    "description": "TypeScript-based code generator that transforms classes and interfaces into fully decorated NestJS artifacts. Automatically generates Swagger DTOs and Mongoose schemas, reducing boilerplate and ensuring consistency across your API and database layers.",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/**/*",
+        "README.md",
+        "LICENSE"
+    ],
+    "bin": {
+        "nest-schema-gen": "./dist/cli.js"
+    },
+    "scripts": {
+        "build": "tsc",
+        "build:watch": "tsc --watch",
+        "prepublishOnly": "npm run build",
+        "test": "jest",
+        "start": "ts-node src/cli.ts",
+        "dev": "ts-node src/cli.ts",
+        "example:swagger": "node dist/cli.js integration-tests/demo-nest-app/src/models/user.ts IUser --generator swagger --out integration-tests/demo-nest-app/src/dtos",
+        "example:mongoose": "node dist/cli.js integration-tests/demo-nest-app/src/models/user.ts IUser --generator mongoose --out integration-tests/demo-nest-app/src/schemas",
+        "example:zod": "node dist/cli.js integration-tests/demo-nest-app/src/models/user.ts IUser --generator zod --out integration-tests/demo-nest-app/src/zod",
+        "generate:demo:models": "npm run example:swagger && npm run example:mongoose && npm run example:zod",
+        "lint": "eslint \"src/**/*.ts\"",
+        "lint:fix": "eslint \"src/**/*.ts\" --fix",
+        "format": "prettier --write \"src/**/*.ts\"",
+        "format:check": "prettier --check \"src/**/*.ts\""
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/YOUR_USERNAME/nest-schema-gen.git"
+    },
+    "bugs": {
+        "url": "https://github.com/YOUR_USERNAME/nest-schema-gen/issues"
+    },
+    "homepage": "https://github.com/YOUR_USERNAME/nest-schema-gen#readme",
+    "keywords": [
+        "nestjs",
+        "swagger",
+        "mongoose",
+        "dto",
+        "typescript",
+        "codegen",
+        "schema",
+        "generator",
+        "nest",
+        "openapi"
+    ],
+    "author": "",
+    "license": "MIT",
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "dependencies": {
+        "ts-morph": "^28.0.0"
+    },
+    "peerDependencies": {
+        "@nestjs/mongoose": "^11.0.4",
+        "@nestjs/swagger": ">=7",
+        "class-transformer": ">=0.5",
+        "class-validator": ">=0.14",
+        "mongoose": "^9.4.1"
+    },
+    "peerDependenciesMeta": {
+        "@nestjs/mongoose": {
+            "optional": true
+        },
+        "@nestjs/swagger": {
+            "optional": true
+        },
+        "class-transformer": {
+            "optional": true
+        },
+        "class-validator": {
+            "optional": true
+        },
+        "mongoose": {
+            "optional": true
+        }
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "@types/jest": "^30.0.0",
+        "typescript-eslint": "^8.0.0",
+        "eslint": "^9.0.0",
+        "jest": "^30.3.0",
+        "prettier": "^3.0.0",
+        "ts-jest": "^29.4.9",
+        "ts-node": "^10.9.0",
+        "typescript": "^5.0.0"
+    }
 }
